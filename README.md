@@ -1,5 +1,7 @@
 # Python Class Query <!-- omit from toc -->
 
+A package for querying Python classes
+
 - [Usage](#usage)
   - [Python](#python)
   - [Command Line](#command-line)
@@ -10,7 +12,6 @@
   - [With presets](#with-presets)
 
 ## Usage
----
 
 ### Python
 
@@ -18,7 +19,7 @@ TODO
 
 ### Command Line
 
-```bash
+```
 usage: python list.py --path STRING
  
 A search command for Python classes
@@ -71,7 +72,6 @@ ChildClass3         ['Tag2']                ...
 > Prefix tags with a _ (underscore) to specify they should NOT be included
 
 ## Examples
----
 
 ### Basic Search
 

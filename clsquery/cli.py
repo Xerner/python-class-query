@@ -1,6 +1,5 @@
 import argparse
 import json
-import sys
 from pathlib import Path
 from types import FunctionType
 from typing import List
