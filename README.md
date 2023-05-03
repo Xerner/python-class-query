@@ -2,6 +2,7 @@
 
 A package for querying Python classes
 
+- [Todo](#todo)
 - [Usage](#usage)
   - [Python](#python)
   - [Command Line](#command-line)
@@ -10,6 +11,11 @@ A package for querying Python classes
   - [With a tag filter and additional attributes](#with-a-tag-filter-and-additional-attributes)
   - [With grouping](#with-grouping)
   - [With presets](#with-presets)
+
+## Todo
+
+- Add a way to distinguish classes with the same name that come from difference sources
+- Make use of different log levels
 
 ## Usage
 
