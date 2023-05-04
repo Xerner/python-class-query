@@ -14,14 +14,19 @@ A package for querying Python classes
 
 ## Todo
 
-- Add a way to distinguish classes with the same name that come from difference sources
 - Make use of different log levels
 
 ## Usage
 
 ### Python
 
-TODO
+Simple use-case
+
+```python
+import clsquery
+
+query = clsquery.query("")
+```
 
 ### Command Line
 

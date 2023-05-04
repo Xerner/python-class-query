@@ -9,16 +9,16 @@ from clsquery import default_formatter, \
                      AVOID_TAG_STR, \
                      NULL_GROUP
 
-def query(paths: Union[ClassQuery, List[str]] = None, 
-         supertypes: List[str] = None, 
-         tags: List[str] = None, 
-         attributes: List[str] = ["__name__"], 
-         group_by: List[str] = None, 
-         formatter: ClassQueryFormatter = None,
-         avoid_tag_str = None,
-         query: ClassQuery = None,
-         recursive: bool = None,
-         log_results = False):
+def query(paths: Union[ClassQuery, str, List[str]] = None, 
+          supertypes: Union[str, List[str]] = None, 
+          tags: Union[str, List[str]] = None, 
+          attributes: Union[str, List[str]] = ["__name__"], 
+          group_by: Union[str, List[str]] = None, 
+          formatter: ClassQueryFormatter = None,
+          avoid_tag_str = None,
+          query: ClassQuery = None,
+          recursive: bool = None,
+          log_results = False):
     """
     A query for python classes
 
@@ -76,6 +76,14 @@ def query(paths: Union[ClassQuery, List[str]] = None,
         
         return root_group
 
+    def resolve_list_var(value, var_name):
+        if type(value) == str:
+            return [value]
+        if type(value) not in [list, type(None)]:
+            raise TypeError("Invalid Type for {}: {}".format(var_name, type(value)))
+        return value
+
+    #region resolving variable values
     if type(paths) == ClassQuery:
         query = paths
         paths = None
@@ -92,7 +100,12 @@ def query(paths: Union[ClassQuery, List[str]] = None,
 
     if paths is None:
         raise ValueError("No Paths argument provided. Expected list of valid paths")
-    
+    paths      = resolve_list_var(paths, "paths")
+    supertypes = resolve_list_var(supertypes, "supertypes")
+    tags       = resolve_list_var(tags, "tags")
+    attributes = resolve_list_var(attributes, "attributes")
+    group_by   = resolve_list_var(group_by, "group_by")
+
     if formatter is None:
         formatter = default_formatter
 
@@ -101,6 +114,7 @@ def query(paths: Union[ClassQuery, List[str]] = None,
 
     if recursive is None:
         recursive = True
+    #endregion
 
     query_ = ClassQuery(paths=paths, 
                         supertypes=supertypes, 

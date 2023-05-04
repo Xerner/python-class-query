@@ -15,6 +15,18 @@ class TestQuery(TestCase):
     def test_basic_query(self):
         result = clsquery.query(self.paths, log_results=True)
 
+    def test_basic_query_literal_type_args(self):
+        result = clsquery.query(paths=self.paths[0], 
+                                supertypes="object", 
+                                tags="", 
+                                log_results=True)
+
+    def test_basic_query_mixed_type_args(self):
+        result = clsquery.query(paths=self.paths, 
+                                supertypes="object", 
+                                tags=None, 
+                                log_results=True)
+
     def test_saved_query(self):
         saved_query = clsquery.ClassQuery(self.paths)
         results = saved_query.query(log_results=True)

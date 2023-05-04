@@ -1,6 +1,9 @@
 from typing import List
 
 def convert_classes_to_table(classes: list, attributes_to_print: List[str]):
+    if len(classes) == 0:
+        return classes
+
     table = []
     table.append(attributes_to_print)
     for class_ in classes:

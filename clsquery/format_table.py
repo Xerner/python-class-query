@@ -3,6 +3,7 @@ def format_table(values: list, indent = 0, margin = 4, has_headers = True) -> st
     table = []
     if len(values) == 0:
         return "No values"
+    
     format_str = []
     for row in values:
         if type(row) == tuple:
