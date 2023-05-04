@@ -1,14 +1,15 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 from clsquery import default_formatter, \
                      get_classes_from_paths, \
                      ClassQuery, \
                      ClassQueryFormatter, \
                      ClassQueryResults, \
                      ClassQueryItem, \
+                     logger, \
                      AVOID_TAG_STR, \
                      NULL_GROUP
 
-def query(paths: List[str] = None, 
+def query(paths: Union[ClassQuery, List[str]] = None, 
          supertypes: List[str] = None, 
          tags: List[str] = None, 
          attributes: List[str] = ["__name__"], 
@@ -16,6 +17,7 @@ def query(paths: List[str] = None,
          formatter: ClassQueryFormatter = None,
          avoid_tag_str = None,
          query: ClassQuery = None,
+         recursive: bool = None,
          log_results = False):
     """
     A query for python classes
@@ -32,11 +34,17 @@ def query(paths: List[str] = None,
         - `group_by` A list of attributes to group the found classes by
         - `formatter` A function that takes in query results, and a few other args, and returns a str to be printed and returned by this function
 
-            Default: default_formatter
+            Default: clsquery.default_formatter
         - `avoid_tag_str` A string that if found prefixing a tag, the search will avoid the tag rather than include it
 
             Default: '_'
         - `query` A ClassQuery instance. Other provided args will override the args in the query instance
+        - `recursive` Whether or not a recursive search should be done on each path in `paths`
+            
+            Default: False
+        - `log_results` Whether or not the query results should be logged to the console using the str returned from `formatter`
+
+            Default: False
     """
     def create_groups(classes: List[ClassQueryItem], group_by: List[str]):
         def get_group_by_attr_value(obj: object, group_by: List[str]):
@@ -68,12 +76,17 @@ def query(paths: List[str] = None,
         
         return root_group
 
+    if type(paths) == ClassQuery:
+        query = paths
+        paths = None
+
     if query is not None:
         paths = query.paths if paths is None else paths
         supertypes = query.supertypes if supertypes is None else supertypes
         tags = query.tags if tags is None else tags
         attributes = query.attributes if attributes is None else attributes
         group_by = query.group_by if group_by is None else group_by
+        recursive = query.recursive if recursive is None else recursive
         formatter = query.formatter if query.formatter is not None else formatter
         avoid_tag_str = query.avoid_tag_str if query.avoid_tag_str is None else avoid_tag_str
 
@@ -86,18 +99,22 @@ def query(paths: List[str] = None,
     if avoid_tag_str is None:
         avoid_tag_str = AVOID_TAG_STR
 
+    if recursive is None:
+        recursive = True
+
     query_ = ClassQuery(paths=paths, 
                         supertypes=supertypes, 
                         tags=tags, 
                         attributes=attributes, 
                         group_by=group_by, 
+                        recursive=recursive,
                         formatter=formatter,
                         avoid_tag_str=avoid_tag_str)
 
-    classes = get_classes_from_paths(paths, supertypes, tags, avoid_tag_str=avoid_tag_str)
+    classes = get_classes_from_paths(paths, supertypes, tags, avoid_tag_str=avoid_tag_str, recursive=recursive)
     groups = create_groups(classes, group_by)
     results = ClassQueryResults(classes, groups, query_, formatter)
     if log_results:
-        print(str(results))
+        logger.info(str(results))
     
     return results

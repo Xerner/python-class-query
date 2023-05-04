@@ -26,7 +26,7 @@ TODO
 ### Command Line
 
 ```
-usage: python list.py --path STRING
+usage: python -m clsquery.query --path STRING
  
 A search command for Python classes
  

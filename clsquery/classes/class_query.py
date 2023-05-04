@@ -11,6 +11,7 @@ class ClassQuery:
                  tags: List[str] = None, 
                  attributes: List[str] = ["__name__"], 
                  group_by: List[str] = None, 
+                 recursive = False,
                  formatter: 'ClassQueryFormatter' = default_formatter,
                  avoid_tag_str = AVOID_TAG_STR):
         """
@@ -31,9 +32,10 @@ class ClassQuery:
         self.tags = tags
         self.attributes = attributes
         self.group_by = group_by
+        self.recursive = recursive
         self.formatter = formatter
         self.avoid_tag_str = avoid_tag_str
 
     def query(self, log_results=False):
         from clsquery import query as query_
-        query_(query=self, log_results=log_results)
+        return query_(query=self, log_results=log_results)

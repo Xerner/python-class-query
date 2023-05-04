@@ -33,15 +33,17 @@ class CustomFormatter(logging.Formatter):
 
 # Create custom logger logging all five levels
 logger = logging.getLogger(LOGGER_NAME)
-logger.setLevel(logging.DEBUG)
 
-# Define format for logs
-fmt = '%(levelname)8s | %(message)s'
+if logging.StreamHandler not in [type(handler) for handler in logger.handlers]:
+    logger.setLevel(logging.DEBUG)
 
-# Create stdout handler for logging to the console (logs all five levels)
-stdout_handler = logging.StreamHandler()
-stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(CustomFormatter(fmt))
+    # Define format for logs
+    fmt = '%(levelname)8s | %(message)s'
 
-# Add both handlers to the logger
-logger.addHandler(stdout_handler)
+    # Create stdout handler for logging to the console (logs all five levels)
+    stdout_handler = logging.StreamHandler()
+    stdout_handler.setLevel(logging.DEBUG)
+    stdout_handler.setFormatter(CustomFormatter(fmt))
+
+    # Add both handlers to the logger
+    logger.addHandler(stdout_handler)

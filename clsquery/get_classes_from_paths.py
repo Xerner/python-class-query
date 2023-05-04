@@ -1,102 +1,73 @@
 import os
-import inspect
-import importlib
-import sys
 from glob import glob
+from pathlib import Path
 from typing import List
 from clsquery.classes.class_query_item import ClassQueryItem
-from clsquery.has_supertype import has_supertype
 from clsquery.constants import AVOID_TAG_STR
+from clsquery.get_classes_at_path import get_classes_in_module
+from clsquery.format_list import format_list
+from clsquery.custom_logger import logger
 
 
-def get_classes_from_paths(file_or_dir_paths: List[str], supertype_filter: List[str] = [], tag_filter: List[str] = [], avoid_tag_str = AVOID_TAG_STR):
+def get_classes_from_paths(file_or_dir_paths: List[str], 
+                           supertype_filter: List[str] = [], 
+                           tag_filter: List[str] = [],
+                           avoid_tag_str = AVOID_TAG_STR,
+                           recursive=False):
     # https://docs.python.org/3/library/importlib.html#importing-a-source-file-directly
     # https://stackoverflow.com/questions/3178285/list-classes-in-directory-python
-    
-    classes: List[ClassQueryItem] = []
-
-    def remove_avoid_tag_str(tag: str):
-        if should_avoid_tag(tag):
-            return tag[1:]
-
-    def should_avoid_tag(tag: str) -> bool:
-        return tag[0] == avoid_tag_str
-
-    def find_classes(path: str, supertypes: List[str] = [], tag_filter: List[str] = []) -> List[ClassQueryItem]:
-        def filter_classes(cls: object, supertypes: List[str] = [], tag_filter: List[str] = []):
-            if not inspect.isclass(cls) or cls.__module__ != name:
-                return False
-
-            has_tag = True
-            if tag_filter is not None and len(tag_filter) > 0:
-                has_tag = False
-                if hasattr(cls, "tags"):
-                    for tag in tag_filter:
-                        if should_avoid_tag(tag):
-                            if remove_avoid_tag_str(tag) in cls.tags:
-                                return False
-                            else:
-                                has_tag = True
-                        else:
-                            if tag in cls.tags:
-                                has_tag = True
-                                break
-                            else:
-                                has_tag = False
-
-            if supertypes is None or len(supertypes) == 0:
-                valid_supertype = True
-            else:
-                valid_supertype = any([has_supertype(cls, supertype) for supertype in supertypes])
-
-            return has_tag and valid_supertype
-        
-        name = os.path.splitext(os.path.basename(path))[0]
-        spec = importlib.util.spec_from_file_location(name,path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[name] = module
-        spec.loader.exec_module(module)
-        classes: List[ClassQueryItem] = []
-        for _, cls in inspect.getmembers(module, lambda cls: filter_classes(cls, supertypes, tag_filter)):
-            classes.append(ClassQueryItem(cls, path))
-        return classes
-
-    def find_and_extend_classes(classes: List[ClassQueryItem], file_or_dir_path: str, type_filter: List[str], tag_filter: List[str] = []):
-        query_result = find_classes(file_or_dir_path, type_filter, tag_filter)
+    def find_and_extend_classes(classes: List[ClassQueryItem], file_or_dir_path: str, type_filter: List[str], tag_filter: List[str] = [], avoid_tag_str = AVOID_TAG_STR):
+        query_result = get_classes_in_module(file_or_dir_path, type_filter, tag_filter, avoid_tag_str)
         for query_item in query_result:
             if query_item in classes:
                 continue
             classes.append(query_item)
 
-        if len(classes) == 0:
-            log_func = print # used to be a warning
+        if len(query_result) == 0:
+            log_func = logger.warning # used to be a warning
         else:
-            log_func = print # used to be a success
+            log_func = logger.info # used to be a success
         
         if len(query_result) == 1:
             log_func(f"Fetched {len(query_result)} class from {file_or_dir_path}")
         else:
             log_func(f"Fetched {len(query_result)} classes from {file_or_dir_path}")
+        if len(query_result) > 0:
+            long_format = len(query_result) > 1
+            logger.info(f"Classes fetched: " + format_list([item.cls.__name__ for item in query_result], is_long_format=long_format))
     
-    print("Fetching classes...")
-    print("Paths to search:  " + str(file_or_dir_paths))
-    print("Supertype filter: " + str(supertype_filter))
-    print("Tag filter:       " + str(tag_filter))
+    classes: List[ClassQueryItem] = []
+
+    logger.info("Fetching classes...")
+    logger.info("Paths to search:  " + format_list(file_or_dir_paths, is_long_format=True))
+    logger.info("Recursive:        " + str(recursive))
+    logger.info("Supertype filter: " + format_list(supertype_filter))
+    logger.info("Tag filter:       " + format_list(tag_filter))
 
     for file_or_dir_path in file_or_dir_paths:
+        path = Path(os.path.expandvars(file_or_dir_path))
+        
         file_or_dir_path = os.path.expandvars(file_or_dir_path)
-        if os.path.isdir(file_or_dir_path):
-            for file_path in glob(os.path.join(file_or_dir_path, "*.py")):
-                find_and_extend_classes(classes, file_path, supertype_filter, tag_filter)
+        if path.is_dir():
+            # recursive search
+            # https://stackoverflow.com/questions/50714469/recursively-iterate-through-all-subdirectories-using-pathlib
+            for file_path in path.glob("*.py"):
+                find_and_extend_classes(classes, file_path, supertype_filter, tag_filter, avoid_tag_str)
+            
+            if recursive:
+                for recursive_path in path.glob('**/*'):
+                    if recursive_path.is_dir():
+                        for file_path in recursive_path.glob("*.py"):
+                            find_and_extend_classes(classes, file_path, supertype_filter, tag_filter, avoid_tag_str)
         elif os.path.isfile(file_or_dir_path):
-            find_and_extend_classes(classes, file_or_dir_path, supertype_filter, tag_filter)
+            find_and_extend_classes(classes, file_or_dir_path, supertype_filter, tag_filter, avoid_tag_str)
         else:
             raise FileNotFoundError(file_or_dir_path)
 
     classes.sort(key=lambda item: item.cls.__name__)
     class_names = [item.cls.__name__ for item in classes]
     if len(classes) == 0:
-        print("No classes fetched: " + str(class_names)) # was a warning
+        logger.warning("No classes fetched: " + format_list(class_names)) # was a warning
     else:
-        print("All classes fetched: " + str(class_names))
+        logger.info("All classes fetched: " + format_list(class_names))
     return classes

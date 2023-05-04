@@ -32,6 +32,12 @@ class TestQuery(TestCase):
             else:
                 raise DuplicateClassError(query_item.cls.__name__, query_item.path)
 
+    def test_recursive_query(self):
+        result = clsquery.query(paths=[os.path.join(self.base_folder, "clsquery")], 
+                                recursive=True,
+                                log_results=True)
+
+
 class DuplicateClassError(Exception):
     def __init__(self, class_name: str, filepath:str) -> None:
         message = f"""While fetching classes, two classes with the same name and path were added to the query. This should not be possible
