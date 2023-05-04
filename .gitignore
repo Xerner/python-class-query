@@ -3,6 +3,7 @@
 #___________________________________________________________________________
 # vscode gitignore from github
 
+.vscode/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
