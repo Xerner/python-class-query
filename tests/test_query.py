@@ -31,6 +31,14 @@ class TestQuery(TestCase):
         saved_query = clsquery.ClassQuery(self.paths)
         results = saved_query.query(log_results=True)
 
+    def test_saved_query_with_overrides(self):
+        saved_query = clsquery.ClassQuery(self.paths, group_by=None)
+        results = saved_query.query(paths=self.paths[0], group_by="__base__.__name__", log_results=True)
+
+    def test_saved_query_with_overrides2(self):
+        saved_query = clsquery.ClassQuery(self.paths, group_by=None)
+        results = clsquery.query(paths=self.paths[0], group_by="__base__.__name__", query=saved_query, log_results=True)
+
     def test_grouped_query(self):
         result = clsquery.query(self.paths, group_by=["__base__.__name__", "__name__"], log_results=True)
 

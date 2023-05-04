@@ -3,6 +3,7 @@
 A package for querying Python classes
 
 - [Todo](#todo)
+- [Installation](#installation)
 - [Usage](#usage)
   - [Python](#python)
   - [Command Line](#command-line)
@@ -16,16 +17,32 @@ A package for querying Python classes
 
 - Make use of different log levels
 
+## Installation
+
+```bash
+python -m pip install clsquery
+```
+
 ## Usage
 
 ### Python
 
-Simple use-case
+Simple query that prints results to console
 
 ```python
 import clsquery
 
-query = clsquery.query("")
+clsquery.query("/path/to/classes", "MyParentClass", log_results=True)
+```
+
+Reusing a saved query
+
+```python
+import clsquery
+
+saved_query = clsquery.ClassQuery("/path/to/classes", "MyParentClass")
+
+saved_query.query(log_results=True)
 ```
 
 ### Command Line

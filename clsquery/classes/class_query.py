@@ -1,6 +1,6 @@
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Union
 if TYPE_CHECKING:
-    from clsquery import ClassQueryFormatter    
+    from clsquery import ClassQueryFormatter
 from clsquery import default_formatter, AVOID_TAG_STR
 
 
@@ -36,6 +36,23 @@ class ClassQuery:
         self.formatter = formatter
         self.avoid_tag_str = avoid_tag_str
 
-    def query(self, log_results=False):
+    def query(self, 
+              paths: Union['ClassQuery', str, List[str]] = None, 
+              supertypes: Union[str, List[str]] = None, 
+              tags: Union[str, List[str]] = None, 
+              attributes: Union[str, List[str]] = ["__name__"], 
+              group_by: Union[str, List[str]] = None, 
+              formatter: 'ClassQueryFormatter' = None,
+              avoid_tag_str = None,
+              recursive: bool = None,log_results=False):
         from clsquery import query as query_
-        return query_(query=self, log_results=log_results)
+        return query_(paths=paths,
+                      supertypes=supertypes,
+                      tags=tags,
+                      attributes=attributes,
+                      group_by=group_by,
+                      formatter=formatter,
+                      avoid_tag_str=avoid_tag_str,
+                      query=self, 
+                      recursive=recursive,
+                      log_results=log_results)
