@@ -21,6 +21,7 @@ def default_formatter(results: ClassQueryResults, indent: int):
 
     is_grouped = results.groups is not None and type(results.groups) != list and results.query.group_by is not None and len(results.query.group_by) != 0
     lines = []
+    lines.append("Logging results with default formatter")
     lines.append("")
     lines.append("Search Results")
     lines.append("---------------")

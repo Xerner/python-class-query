@@ -1,8 +1,7 @@
 # Python Class Query <!-- omit from toc -->
 
-A package for querying Python classes
+`clsquery` is a searching tool implemented to help developers query classes available in files and folders for viewing or for use during runtime. Only classes defined in the files being searched are included. Imported classes are ignored.
 
-- [Todo](#todo)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Python](#python)
@@ -11,9 +10,8 @@ A package for querying Python classes
   - [Basic Search](#basic-search)
   - [With a tag filter and additional attributes](#with-a-tag-filter-and-additional-attributes)
   - [With grouping](#with-grouping)
-  - [With presets](#with-presets)
 
-## Todo
+**Todo**
 
 - Make use of different log levels
 
@@ -27,12 +25,20 @@ python -m pip install clsquery
 
 ### Python
 
-Simple query that prints results to console
+Simple query that finds any Python Class and prints results to console
 
 ```python
 import clsquery
 
-clsquery.query("/path/to/classes", "MyParentClass", log_results=True)
+results = clsquery.query("/path/to/classes", log_results=True)
+```
+
+Simple query that finds any Python Class that inherits from `MyParentClass` and prints results to console
+
+```python
+import clsquery
+
+results = clsquery.query("/path/to/classes", "MyParentClass", log_results=True)
 ```
 
 Reusing a saved query
@@ -41,42 +47,80 @@ Reusing a saved query
 import clsquery
 
 saved_query = clsquery.ClassQuery("/path/to/classes", "MyParentClass")
+results = saved_query.query(log_results=True)
+# or
+results = clsquery.query(query=saved_query, log_results=True)
+```
 
-saved_query.query(log_results=True)
+Overriding an attribute of a saved query
+
+```python
+import clsquery
+
+saved_query = clsquery.ClassQuery("/path/to/classes", "MyParentClass")
+results = saved_query.query(paths="/different/path/to/classes", log_results=True)
+```
+
+A query that will find all Python Classes in each module found at the path provided that
+- Inherits from `MyParentClass`
+- has an attribute `tags` that is a list containing the value `"snake"`
+- has an attribute `tags` that is a list that **does not** contain the value `"wolverine"`
+
+And, using the default formatter, will print each class grouped by the module it came from and display its name and docstring in a table-like format
+
+```python
+import clsquery
+
+results = clsquery.query(paths="/path/to/classes", 
+                         supertypes="MyParentClass",
+                         tags=["snake", "_wolverine"],
+                         attributes=["__name__", "__doc__"],
+                         group_by="__module__")
+```
+
+> Prefix tags with a _ (underscore) to specify they should NOT be included
+
+A recursive search that will look in all folders and modules under the paths provided
+
+```python
+import clsquery
+
+results = clsquery.query("/path/to/parent/folder", recursive=True, log_results=True)
 ```
 
 ### Command Line
 
+Help dialog
+
 ```
-usage: python -m clsquery.query --path STRING
- 
-A search command for Python classes
- 
+usage: python -m clsquery.cli.py --path STRING
+
+A query command for Python classes
+
 optional arguments:
   -h, --help            show this help message and exit
   -p [STRING [STRING ...]], --paths [STRING [STRING ...]]
-                        directory path or filepath to the classes to generate docs for
+                        directory path or filepath to the classes to generate
+                        docs for
   -t [STRING [STRING ...]], --tags [STRING [STRING ...]]
-                        the tags to look for when including classes. A class must have a 'tags' attribute for this to work. Prefix tags with '_' to specify they should NOT be included
+                        the tags to look for when including classes. A class
+                        must have a 'tags' attribute for this to work. Prefix
+                        tags with '_' to specify they should NOT be included
   -s [STRING [STRING ...]], --supertypes [STRING [STRING ...]]
                         The supertypes to look for when including classes
   -a [STRING [STRING ...]], --attributes [STRING [STRING ...]]
                         What attributes of the class to return
   -g [STRING [STRING ...]], --group-by [STRING [STRING ...]]
                         What attribute to group the classes by
-  -l PRESET, --load-preset PRESET
-                        load a preset list of args
- 
-Options provided on the command line will override options loaded by a preset
+  -r, --recursive       Whether or not a recursive search should be done on
+                        each path in 'paths'
 ```
 
-The list command is a generic python class searching tool implemented to help users discover topic, metric, and requirement classes available. Only classes defined in the files being searched are included. Imported classes are ignored.
-
-It returns a format similar to below
+Queries are, by default, formatted by an internal formatter function with results similar to the below
 
 ```
 # Input
-list.py -p "path/to/classes1" "path/to/classes2" -t Tag1 Tag2 _Tag3 -s ParentClass1 ParentClass2 -a __name__ tags <other attributes>
+python -m clsquery.cli -p "path/to/classes1" "path/to/classes2" -t Tag1 Tag2 _Tag3 -s ParentClass1 ParentClass2 -a __name__ tags <other attributes>
  
 # Output
 Search Results
@@ -105,7 +149,7 @@ ChildClass3         ['Tag2']                ...
 
 ```
 # Input
-list -p /path/to/classes
+python -m clsquery.cli -p /path/to/classes
  
 # Output
 Search Results
@@ -134,7 +178,7 @@ Notice
 
 ```
 # Input
-list -p /path/to/classes --tags _avoid_me -a __name__ __doc__
+python -m clsquery.cli -p /path/to/classes --tags _avoid_me -a __name__ __doc__
  
 # Output
 Search Results
@@ -161,7 +205,7 @@ Notice
 
 ```
 # Input
-list -p /path/to/classes -g __base__.__name__ is_special  
+python -m clsquery.cli -p /path/to/classes -g __base__.__name__ is_special  
  
 # Output
 Search Results
@@ -189,7 +233,3 @@ SomeParentClass
         ------------------
         ASpecialClass
 ```
-
-### With presets
-
-TODO
