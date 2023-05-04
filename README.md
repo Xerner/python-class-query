@@ -1,5 +1,7 @@
 # Python Class Query <!-- omit from toc -->
 
+![tests-passing](https://img.shields.io/badge/tests-passing-brightgreen)
+
 `clsquery` is a searching tool implemented to help developers query classes available in files and folders for viewing or for use during runtime. Only classes defined in the files being searched are included. Imported classes are ignored.
 
 - [Installation](#installation)
